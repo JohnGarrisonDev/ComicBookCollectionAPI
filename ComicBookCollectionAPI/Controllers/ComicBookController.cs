@@ -9,16 +9,19 @@ namespace ComicBookCollectionAPI.Controllers
     public class ComicBookController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly IComicBookRepo _bookRepo;
 
-        public ComicBookController(DataContext context)
+        public ComicBookController(DataContext context, IComicBookRepo bookRepo)
         {
             _context = context;
+            _bookRepo = bookRepo;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<ComicBook>>> Get()
+        public  ActionResult<IEnumerable<ComicBook>> Get()
         {
-            return Ok(await _context.ComicBooks.ToListAsync());
+            var books =  _bookRepo.GetAllComicBooks();
+            return Ok(books);
         }
 
         [HttpGet("{id}")]
