@@ -25,16 +25,16 @@ namespace ComicBookCollectionAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ComicBook>> Get(int id)
+        public ActionResult<ComicBook> Get(int id)
         {
-            var comic = await _context.ComicBooks.FindAsync(id);
+            var comic =  _bookRepo.GetComicBook(id);
             if (comic == null)
                 return BadRequest("Comic not found.");
             return Ok(comic);
         }
 
         [HttpPost("{idStart}/{idEnd}")]
-        public async Task<ActionResult<List<ComicBook>>> AddBooks(ComicBook bookTemplate,int idStart, int idEnd) 
+        public ActionResult<List<ComicBook>> AddBooks(ComicBook bookTemplate,int idStart, int idEnd) 
         { 
             for(int i = 0; i <= idEnd; i++)
             {
@@ -43,38 +43,38 @@ namespace ComicBookCollectionAPI.Controllers
                 _context.ComicBooks.Add(book);
             }
             
-            await _context.SaveChangesAsync();
+             _bookRepo.SaveChanges();
 
-            return Ok(await _context.ComicBooks.ToListAsync());
+            return Ok( _bookRepo.GetAllComicBooks());
         }
 
         [HttpPost]
-        public async Task<ActionResult<List<ComicBook>>> AddBook(ComicBook book)
+        public  ActionResult<IEnumerable<ComicBook>> AddBook(ComicBook book)
         {
-            _context.ComicBooks.Add(book);
+            _bookRepo.CreateComicBook(book);
 
-            await _context.SaveChangesAsync().ContinueWith((res) => {
+            //Need to fix this 
+            _bookRepo.SaveChanges();
                 for (int i = 0; i < book.Traits.Length; i++)
                     {
                         var trait = new CBTrait(book.Id, book.Traits[i]);
                         _context.CBTrait.Add(trait);
                     }
-            });
-            await _context.SaveChangesAsync();
-            return Ok(await _context.ComicBooks.ToListAsync());
+            _bookRepo.SaveChanges();
+            return Ok( _bookRepo.GetAllComicBooks());
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<List<ComicBook>>> Delete(int id)
+        public  ActionResult<List<ComicBook>> Delete(int id)
         {
-            var comic = await _context.ComicBooks.FindAsync(id);
+            var comic =  _bookRepo.GetComicBook(id);
             if (comic == null)
                 return BadRequest("Comic not found.");
 
-            _context.ComicBooks.Remove(comic);
-            await _context.SaveChangesAsync();
+            _bookRepo.DeleteComicBook(comic);
+            _bookRepo.SaveChanges();
 
-            return Ok(await _context.ComicBooks.ToListAsync());
+            return Ok(_bookRepo.GetAllComicBooks());
         }
     }
 }
